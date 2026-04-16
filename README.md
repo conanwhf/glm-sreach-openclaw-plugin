@@ -1,13 +1,16 @@
-# GLM Search Plugin for OpenClaw
+# GLM Search & Tools Plugin for OpenClaw
 
-Web search provider plugin using the **GLM/Z.AI** web search MCP server.
+GLM/Z.AI tools for OpenClaw via MCP servers: **web search**, **page reader**, and **GitHub repo reader**.
 
-## Features
+## Tools
 
-- Web search via GLM's `webSearchPrime` MCP tool
-- Supports both **global** (`api.z.ai`) and **CN** (`open.bigmodel.cn`) endpoints
-- Region auto-detection or manual config (`glm.region: "cn"`)
-- Caching, timeout, and credential management via OpenClaw's web search SDK
+| Tool | MCP Server | Description |
+|------|-----------|-------------|
+| `glm_search` | web_search_prime | Search the web via GLM (currently returns empty results due to a GLM service-side issue) |
+| `glm_reader` | web_reader | Read and extract content from any URL — handles anti-bot pages |
+| `glm_zread` | zread | Browse GitHub repo structure and read files |
+
+All three tools are **standalone** — available regardless of your default search provider.
 
 ## Install
 
@@ -32,15 +35,9 @@ export Z_AI_API_KEY="your-api-key"
 # or: ZAI_API_KEY, GLM_API_KEY, ZHIPU_API_KEY
 ```
 
-Or configure via OpenClaw:
-
-```bash
-openclaw configure --section web
-```
-
 ### Region (optional)
 
-To force the CN endpoint, add to your OpenClaw config:
+To force CN endpoints, add to your OpenClaw config:
 
 ```yaml
 tools:
@@ -50,32 +47,41 @@ tools:
         region: cn
 ```
 
-By default, the plugin uses the **global** endpoint (`api.z.ai`).
-
 ## Get API Key
 
 - **Global**: [Z.AI Console](https://z.ai/manage-apikey/apikey-list)
 - **CN**: [智谱开放平台](https://open.bigmodel.cn/usercenter/apikeys)
 
+## Usage Examples
+
+```
+# Read a web page
+glm_reader url="https://example.com/article"
+
+# Browse a GitHub repo
+glm_zread action="structure" repo_name="openclaw/openclaw"
+
+# Read a specific file from a repo
+glm_zread action="file" repo_name="openclaw/openclaw" path="package.json"
+
+# Search the web (when GLM fixes their service)
+glm_search query="latest AI news"
+```
+
+## Known Issues
+
+- **`glm_search`** returns empty results (`[]`) for all queries. This is a GLM/Z.AI service-side issue, not a plugin bug. Other tools (reader, zread) work fine.
+
 ## Development
 
 ```bash
-# Test install locally
+# Test locally
 openclaw plugins install ./glm-search-plugin
 
 # Publish to ClawHub
 clawhub package publish ./glm-search-plugin --dry-run
 clawhub package publish ./glm-search-plugin
 ```
-
-## How it works
-
-This plugin implements a minimal MCP Streamable HTTP client that:
-
-1. Initializes an MCP session with the GLM search server
-2. Sends an `initialized` notification
-3. Calls the `webSearchPrime` tool with the search query
-4. Parses the JSON/SSE response and returns structured results
 
 ## License
 

@@ -1,7 +1,7 @@
 {
   "id": "glm-search",
   "name": "GLM Search",
-  "description": "Web search via GLM/Z.AI web search MCP server (global & CN endpoints)",
+  "description": "GLM/Z.AI tools: web search (glm_search), page reader (glm_reader), and GitHub repo reader (glm_zread) via MCP servers",
   "configSchema": {
     "type": "object",
     "additionalProperties": false

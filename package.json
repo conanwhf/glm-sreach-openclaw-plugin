@@ -1,8 +1,8 @@
 {
   "name": "@conanwhf/openclaw-glm-search",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
-  "description": "OpenClaw web search provider plugin using GLM/Z.AI search via MCP",
+  "description": "OpenClaw plugin: GLM/Z.AI web search, page reader, and GitHub repo reader via MCP servers",
   "license": "MIT",
   "main": "index.ts",
   "openclaw": {

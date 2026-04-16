@@ -3,16 +3,20 @@ import {
   createGlmWebSearchProvider,
   createGlmSearchToolDefinition,
 } from "./src/glm-web-search-provider.js";
+import {
+  createGlmReaderToolDefinition,
+  createGlmZreadToolDefinition,
+} from "./src/glm-mcp-tools.js";
 
 export default definePluginEntry({
   id: "glm-search",
   name: "GLM Search",
-  description: "Web search via GLM/Z.AI web search MCP server (global & CN endpoints)",
+  description:
+    "GLM/Z.AI tools: web search, page reader, and GitHub repo reader via MCP servers",
   register(api) {
-    // Register as a web search provider (used when set as default)
     api.registerWebSearchProvider(createGlmWebSearchProvider());
-
-    // Also register as a standalone tool (always available regardless of default)
     api.registerTool(createGlmSearchToolDefinition());
+    api.registerTool(createGlmReaderToolDefinition());
+    api.registerTool(createGlmZreadToolDefinition());
   },
 });
