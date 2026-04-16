@@ -393,6 +393,90 @@ function createGlmToolDefinition(
 }
 
 // ---------------------------------------------------------------------------
+// Standalone tool (always available, regardless of default search provider)
+// ---------------------------------------------------------------------------
+
+export function createGlmSearchToolDefinition() {
+  return {
+    name: "glm_search",
+    description:
+      "Search the web using GLM/Z.AI Search. Returns titles, URLs, and snippets. Use this for Chinese-language queries or when other search providers are unavailable.",
+    parameters: Type.Object({
+      query: Type.String({ description: "Search query string." }),
+      count: Type.Optional(
+        Type.Number({
+          description: "Number of results to return (1-10).",
+          minimum: 1,
+          maximum: 10,
+        }),
+      ),
+    }),
+    async execute(_id: string, params: Record<string, unknown>) {
+      // Resolve API key from env (same logic as the provider)
+      const apiKey = readProviderEnvValue([...GLM_API_KEY_ENV_VARS]);
+      if (!apiKey) {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(missingGlmKeyPayload()),
+            },
+          ],
+        };
+      }
+
+      const query = readStringParam(params, "query", { required: true });
+      const count = readNumberParam(params, "count", { integer: true });
+      const resolvedCount = resolveSearchCount(count, DEFAULT_SEARCH_COUNT);
+      const endpoint = resolveGlmEndpoint();
+
+      const cacheKey = buildSearchCacheKey([
+        "glm-tool",
+        endpoint,
+        query,
+        resolvedCount,
+      ]);
+      const cached = readCachedSearchPayload(cacheKey);
+      if (cached) {
+        return { content: [{ type: "text" as const, text: JSON.stringify(cached) }] };
+      }
+
+      const start = Date.now();
+      const timeoutSeconds = 30;
+      const cacheTtlMs = 15 * 60 * 1000;
+
+      const { results, relatedSearches } = await callGlmMcpSearch({
+        query,
+        apiKey,
+        endpoint,
+        timeoutSeconds,
+      });
+
+      const payload: Record<string, unknown> = {
+        query,
+        provider: "glm",
+        count: results.length,
+        tookMs: Date.now() - start,
+        externalContent: {
+          untrusted: true,
+          source: "web_search",
+          provider: "glm",
+          wrapped: true,
+        },
+        results: results.slice(0, resolvedCount),
+      };
+
+      if (relatedSearches && relatedSearches.length > 0) {
+        payload.relatedSearches = relatedSearches;
+      }
+
+      writeCachedSearchPayload(cacheKey, payload, cacheTtlMs);
+      return { content: [{ type: "text" as const, text: JSON.stringify(payload) }] };
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Provider registration (exported)
 // ---------------------------------------------------------------------------
 
