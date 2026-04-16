@@ -1,0 +1,9 @@
+{
+  "id": "glm-search",
+  "name": "GLM Search",
+  "description": "Web search via GLM/Z.AI web search MCP server (global & CN endpoints)",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}
